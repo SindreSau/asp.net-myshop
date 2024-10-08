@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using MyShop_Logging.Data;
 using MyShop_Logging.Mappings;
+using MyShop_Logging.Repositories;
+using MyShop_Logging.Repositories.Interfaces;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,12 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add controllers
 builder.Services.AddControllers();
 
-// Add AutoMapper
-builder.Services.AddAutoMapper(typeof(ProductProfile).Assembly);
-
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(
+    c =>
+    {
+        c.SwaggerDoc("v1", new() { Title = "MyShop_Logging", Version = "v1" });
+        c.EnableAnnotations();
+    });
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -26,11 +30,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Serilog
 var loggerConfiguration = new LoggerConfiguration()
     .WriteTo.Console()
-    .WriteTo.File($"logs/app_{DateTime.Now:yyyy-MM-dd}.log", rollingInterval: RollingInterval.Hour);
+    .WriteTo.File(
+        path: "logs/app_.log",
+        rollingInterval: RollingInterval.Day,
+        rollOnFileSizeLimit: true,
+        fileSizeLimitBytes: 10 * 1024 * 1024, // 10 MB
+        retainedFileCountLimit: 31, // How many log files to keep
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+    );
 
 if (builder.Environment.IsDevelopment())
 {
-    loggerConfiguration.MinimumLevel.Information();
+    loggerConfiguration.MinimumLevel.Verbose();
 }
 else if (builder.Environment.IsProduction())
 {
@@ -40,11 +51,18 @@ else if (builder.Environment.IsProduction())
 Log.Logger = loggerConfiguration.CreateLogger();
 builder.Logging.AddSerilog();
 
+// Repositories
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+// Add AutoMapper
+builder.Services.AddAutoMapper(typeof(ProductProfile).Assembly);
+
 var app = builder.Build();
 
 // Seed the database
-using (var scope = app.Services.CreateScope())
+if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
     try
     {
@@ -66,20 +84,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.MapControllers();
 
-string appStartLogMessage = @"
-     /~___________________~\ 
-     .---------------------. 
-    (| APPLICATION STARTED |)
-     '---------------------' 
-     \_~~~~~~~~~~~~~~~~~~~_/ 
-"
-+
-    $"\t\nApplication started at {DateTime.Now}"
-+
-    $"\t\nEnvironment: {app.Environment.EnvironmentName}\n";
-
-app.Logger.LogInformation(appStartLogMessage);
 app.Run();

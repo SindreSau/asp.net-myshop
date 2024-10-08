@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyShop_Logging.Data;
 
@@ -10,9 +11,11 @@ using MyShop_Logging.Data;
 namespace MyShop_Logging.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241008141054_UtcNowInsteadOfDateTimeNow")]
+    partial class UtcNowInsteadOfDateTimeNow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,16 +30,16 @@ namespace MyShop_Logging.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateUpdated")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -53,7 +56,10 @@ namespace MyShop_Logging.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateUpdated")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -66,9 +72,6 @@ namespace MyShop_Logging.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
