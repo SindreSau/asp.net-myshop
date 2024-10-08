@@ -74,7 +74,7 @@ public class ProductController(IProductRepository productRepository, ILogger<Pro
     [SwaggerOperation(Summary = "Create a new product")]
     [SwaggerResponse(StatusCodes.Status201Created, "The product was created", typeof(ProductReadDto))]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Failed to create the product")]
-    public async Task<ActionResult<ProductReadDto>> CreateProduct(ProductCreateDto productCreateDto)
+    public async Task<ActionResult<ProductReadDto>> CreateProduct([FromBody]ProductCreateDto productCreateDto)
     {
         if (ModelState.IsValid == false)
         {
@@ -100,7 +100,7 @@ public class ProductController(IProductRepository productRepository, ILogger<Pro
     [SwaggerResponse(StatusCodes.Status204NoContent, "The product was updated")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "The product was not found")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Failed to update the product")]
-    public async Task<ActionResult> UpdateProduct(int id, ProductUpdateDto productUpdateDto)
+    public async Task<ActionResult> UpdateProduct(int id, [FromBody]ProductUpdateDto productUpdateDto)
     {
         if (ModelState.IsValid == false)
         {
